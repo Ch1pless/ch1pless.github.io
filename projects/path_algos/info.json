@@ -1,0 +1,7 @@
+{
+    "title": "Pathfinding Algorithms",
+    "description": "An interactive display of several different pathfinding algorithms!",
+    "href": "projects/path_algos/index.html",
+    "imgsrc": "projects/path_algos/path_algos.png",
+    "imgalt": "Image of the Pathfinding Project"
+}

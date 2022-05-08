@@ -1,0 +1,168 @@
+.page-color {
+  background-color: #dedad6;
+  color: #212529;
+}
+
+.home-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  width: -webkit-fit-content;
+  width: -moz-fit-content;
+  width: fit-content;
+  height: 100vh;
+  margin-left: auto;
+  margin-right: auto;
+  
+  z-index: 1;
+}
+  
+.home-title {
+  font-size: 10vw;
+  text-align: center;
+}
+
+.home-bar {
+  margin: 0;
+  width: 100%;
+}
+
+.home-plane {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+
+  width: 90vw;
+  height: 100vh;
+  margin-left: auto;
+  margin-right: auto;
+  
+  overflow: hidden;
+  background-color: transparent;
+  z-index: 0;
+}
+
+.projects {
+  min-height: 100vh;
+}
+
+.card:hover {
+  background: rgba(0,0,0,.125);
+  transition: background-color .2s ease-in-out;
+}
+
+.card-sider {
+  background: rgba(0,0,0,.03);
+  border-right: 1px solid rgba(0,0,0,.125);
+}
+
+.w-card {
+  width: 18rem;
+}
+
+.transition {
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* horizontal centering */
+  align-items: center; /* vertical centering */
+
+  position: fixed;
+  left: 0;
+  top: 100%;
+  width: 100vw;
+  height: 200vh;
+  
+  z-index: 10;
+  background: transparent;
+  
+  opacity: 1;
+  pointer-events: none;
+}
+
+.plane-formation {
+  width: 100vw;
+  height: 100vh;
+}
+
+.fly-up {
+  animation: shift-up-pause 3s;
+}
+
+.fly-down {
+  -webkit-transform: rotate(180deg);
+  -moz-transform: rotate(180deg);
+  -ms-transform: rotate(180deg);
+  -o-transform: rotate(180deg);
+  transform: rotate(180deg);
+  animation: shift-down-pause 3s;
+}
+
+.cover {
+  height: 100vh;
+  width: 100vw;
+}
+
+@keyframes shift-up-pause {
+  0% {
+    top: 100%;
+    opacity: 1;
+  }
+  50% {
+    top: -100%;
+    opacity: 1;
+  }
+  99% {
+    top: -100%;
+    opacity: 0;
+  }
+  100% {
+    top: -200%;
+    opacity: 0;
+  }
+}
+
+@keyframes shift-down-pause {
+  0% {
+    top: -200%;
+    opacity: 1;
+  }
+  50% {
+    top: 0%;
+    opacity: 1;
+  }
+  99% {
+    top: 0%;
+    opacity: 0;
+  }
+  100% {
+    top: 100%;
+    opacity: 0;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .btn-dark {
+    background-color: #dedad6;
+    color: #212529;
+  }
+
+  .page-color {
+    background-color: #212529;
+    color: #dedad6;
+  }
+
+  .card:hover {
+    background: rgb(255,255,255,0.125);
+    transition: background-color .2s ease-in-out;
+  }
+
+  .inversion {
+    -webkit-filter: invert(100%);
+    -moz-filter: invert(100%);
+    -o-filter: invert(100%);
+    filter: invert(100%);
+  }
+}
