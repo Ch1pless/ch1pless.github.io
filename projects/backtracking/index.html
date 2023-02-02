@@ -19,14 +19,28 @@
     </div>
 
     <div id="options" class="rad-shadow">
-      <button id="toggle-solve">Start</button>
+      <button id="toggle-solve">Simulate</button>
+      <button id="solve">Solve</button>
       <div>
         <label for="pre-compute">Pre-Compute</label>
         <input type="checkbox" name="pre-compute" id="pre-compute">
       </div>
       <div>
-        <label for="prune">Prune</label>
-        <input type="checkbox" name="prune" id="prune">
+        <fieldset style="display: flex; flex-direction: column;">
+          <legend>Select your desired level of pruning.</legend>
+          <div>
+            <input type="radio" name="prune" id="no-prune">
+            <label for="no-prune">None</label>
+          </div>
+          <div>
+            <input type="radio" name="prune" id="prune" checked>
+            <label for="prune">Pruning</label>
+          </div>
+          <div>
+            <input type="radio" name="prune" id="prune-priority">
+            <label for="prune-most">Pruning and Priority</label>
+          </div>
+        </fieldset>
       </div>
       <div>
         <label for="delay">Delay</label>

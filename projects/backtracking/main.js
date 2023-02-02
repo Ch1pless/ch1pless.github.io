@@ -1,12 +1,22 @@
 let problem_elm = document.querySelector('#problem-box');
+
 let running_elm = document.querySelector('#toggle-solve');
+let instant_elm = document.querySelector('#solve');
+
 let pre_compute_elm = document.querySelector('#pre-compute');
+
+let prune_none_elm = document.querySelector('#no-prune');
 let prune_elm = document.querySelector('#prune');
+let prune_priority_elm = document.querySelector('#prune-priority');
+
 let delay_elm = document.querySelector('#delay');
 let delay_txt_elm = document.querySelector('#delay-text');
+
 let input_sudoku_elm = document.querySelector('#input-puzzle');
+
 let gen_puzzle_elm = document.querySelector('#gen-puzzle');
 let gen_rand_puzzle_elm = document.querySelector('#gen-rand-puzzle');
+
 let result_elm = document.querySelector('#result');
 
 let running = false;
@@ -65,7 +75,21 @@ gen_puzzle_elm.addEventListener('click', event => {
 gen_rand_puzzle_elm.addEventListener('click', event => {
   generate_random_sudoku();
   populate_sudoku_elms();
-})
+});
+
+instant_elm.addEventListener('click', event => {
+  running = true;
+  // setup active sudoku
+  for (let row = 0; row < 9; ++row) {
+    for (let col = 0; col < 9; ++col) {
+      active[row][col] = sudoku[row][col];
+    }
+  }
+  populate_sudoku_elms();
+  instant_backtrack().then(result => {
+    running = false;
+  });
+});
 
 running_elm.addEventListener('click', event => {
   if (!running) {
@@ -76,15 +100,15 @@ running_elm.addEventListener('click', event => {
         active[row][col] = sudoku[row][col];
       }
     }
-    running = !running;
+    running = true;
     populate_sudoku_elms();
     backtrack().then(resolved => {
-      running_elm.innerHTML = 'Start';
-      running = !running;
+      running_elm.innerHTML = 'Simulate';
+      running = false;
     })
   } else {
-    running_elm.innerHTML = 'Start';
-    running = !running;
+    running_elm.innerHTML = 'Simulate';
+    running = false;
   }
 });
 
@@ -128,8 +152,24 @@ function populate_sudoku_elms() {
   }
 }
 
+class Timer {
+  Timer() {
+    this.time = 0;
+  }
+  recordTime() {
+    this.last_time = new Date();
+  }
+  addTime() {
+    let next_time = new Date();
+    this.time += next_time - this.last_time;
+    this.last_time = next_time;
+  }
+};
+
+let timer = new Timer();
 
 function setup() {
+  timer.time = 0;
   rows = [], cols = [], boxes = [];
 
   let nums = [1, 2, 3, 4, 5, 6, 7, 8, 9];
@@ -147,6 +187,8 @@ function index_box(r, c) {
 function index_flat(r, c) {
   return r * 9 + c;
 }
+
+
 
 async function pre_compute() {
   // check for validity
@@ -285,6 +327,7 @@ async function dfs(r, c) {
 }
 
 async function dfs_prune(r, c) {
+  timer.recordTime();
   if (!running) return false;
   // check for full solution, sanity check
   if (r >= 9) {
@@ -315,6 +358,7 @@ async function dfs_prune(r, c) {
 
   // value already set, skip
   if (active[r][c] != 0) {
+    timer.addTime();
     if (running && await dfs_prune(nr, nc)) {
       return true;
     } else {
@@ -336,13 +380,19 @@ async function dfs_prune(r, c) {
     boxes[index_box(r, c)].delete(value);
     sudoku_elms[r][c].innerHTML = `${value}`;
     sudoku_elms[r][c].classList.add('cell-current');
+    timer.addTime();
     if (delay > 0) await sleep(delay);
+    timer.recordTime();
     sudoku_elms[r][c].classList.replace('cell-current', 'cell-attempt');
+
     if (running && await dfs_prune(nr, nc)) {
       sudoku_elms[r][c].classList.add('cell-placed');
+      timer.addTime();
       if (delay > 0) await sleep(delay);
+      timer.recordTime();
       return true;
     }
+
     active[r][c] = 0;
     rows[r].add(value);
     cols[c].add(value);
@@ -350,43 +400,163 @@ async function dfs_prune(r, c) {
     sudoku_elms[r][c].innerHTML = '';
   }
   sudoku_elms[r][c].classList.remove('cell-attempt');
+  timer.addTime();
   return false;
 }
 
-function displayResult(result) {
-  result_elm.innerHTML = result;
+async function dfs_prune_more(r, c) {
+  timer.recordTime();
+  if (!running) return false;
+  // check for full solution, sanity check
+  if (r >= 9) {
+    let rows_f = [], cols_f = [], boxes_f = [];
+    for (let sets = 0; sets < 9 && running; ++sets) {
+      rows_f.push(new Set([1, 2, 3, 4, 5, 6, 7, 8, 9]));
+      cols_f.push(new Set([1, 2, 3, 4, 5, 6, 7, 8, 9]));
+      boxes_f.push(new Set([1, 2, 3, 4, 5, 6, 7, 8, 9]));
+    }
+
+    for (let row = 0; row < 9 && running; ++row) {
+      for (let col = 0; col < 9 && running; ++col) {
+        // not a valid solution
+        if (!rows_f[row].delete(active[row][col]) ||
+            !cols_f[col].delete(active[row][col]) ||
+            !boxes_f[index_box(row, col)].delete(active[row][col])) {
+              return false;
+            }
+      }
+    }
+    return true;
+  }
+
+  let nr = r, nc = c + 1, best_prob;
+  if (nc >= 9) {
+    nr = r + 1, nc = 0;
+  }
+
+  // value already set, skip
+  if (active[r][c] != 0) {
+    timer.addTime();
+    if (running && await dfs_prune(nr, nc)) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  let attempt = new Set();
+  rows[r].forEach(element => {
+    if (cols[c].has(element) && boxes[index_box(r, c)].has(element)) {
+      attempt.add(element);
+    }
+  });
+
+  for (const value of attempt) {
+    active[r][c] = value;
+    rows[r].delete(value);
+    cols[c].delete(value);
+    boxes[index_box(r, c)].delete(value);
+    sudoku_elms[r][c].innerHTML = `${value}`;
+    sudoku_elms[r][c].classList.add('cell-current');
+    timer.addTime();
+    if (delay > 0) await sleep(delay);
+    timer.recordTime();
+    sudoku_elms[r][c].classList.replace('cell-current', 'cell-attempt');
+
+    nr = 9, nc = 9, best_prob = 9;
+    for (let row = 0; row < 9; ++row) {
+      for (let col = 0; col < 9; ++col) {
+        if (active[row][col] != 0) continue;
+  
+        let next_attempt = new Set();
+        rows[row].forEach(element => {
+          if (cols[col].has(element) && boxes[index_box(row, col)].has(element)) {
+            next_attempt.add(element);
+          }
+        });
+        if (next_attempt.size < best_prob) {
+          nr = row, nc = col, best_prob = attempt.size;
+        }
+      }
+    }
+
+    if (running && await dfs_prune_more(nr, nc)) {
+      sudoku_elms[r][c].classList.add('cell-placed');
+      timer.addTime();
+      if (delay > 0) await sleep(delay);
+      timer.recordTime();
+      return true;
+    }
+
+    active[r][c] = 0;
+    rows[r].add(value);
+    cols[c].add(value);
+    boxes[index_box(r, c)].add(value);
+    sudoku_elms[r][c].innerHTML = '';
+  }
+  sudoku_elms[r][c].classList.remove('cell-attempt');
+  timer.addTime();
+  return false;
+}
+
+function displayResult(result, show_time=true) {
+  result_elm.innerHTML = result + (show_time ? ` Took ${timer.time} ms.` : '');
   result_elm.classList.toggle('hidden');
   setTimeout(element => {result_elm.classList.toggle('hidden');}, 3000);
+}
+
+async function instant_backtrack() {
+  let delay_saved = delay;
+  delay = 0;
+  setup();
+  if (await pre_compute()) {
+  } else {
+    displayResult('Invalid Puzzle. Impossible to solve.', false);
+    delay = delay_saved;
+    return false;
+  }
+
+  if (await dfs_prune_more(0, 0)) {
+    displayResult('Puzzle Solved!', false);
+    delay = delay_saved;
+    return true;
+  } else {
+    displayResult('Puzzle Unsolved :(', false);
+  }
+  delay = delay_saved;
 }
 
 async function backtrack() {
   setup();
   if (pre_compute_elm.checked) {
     if (await pre_compute()) {
-      console.log('Valid Puzzle!');
-
+      displayResult('Valid Puzzle. Solving...', false);
     } else {
-      console.log('Invalid Puzzle :(');
-      displayResult('Invalid Puzzle. Impossible to solve.');
+      displayResult('Invalid Puzzle. Impossible to solve.', false);
       return false;
     }
-  } else console.log('Not Pre-Computing? You\'re funeral.');
+  } else displayResult('Not Pre-Computing? Your funeral.', false);
 
-  if (prune_elm.checked) {
-    if (await dfs_prune(0, 0)) {
-      console.log('Puzzle Solved!');
+  if (prune_priority_elm.checked) {
+    if (await dfs_prune_more(0, 0)) {
       displayResult('Puzzle Solved!');
       return true;
     } else {
-      console.log('Puzzle Unsolved :(');
-      displayResult('Puzzle Unsolved :(');
+      displayResult('Puzzle Unsolved :(', false);
     }
-  } else {
-    if (await dfs(0, 0)) {
-      console.log('Puzzle Solved!');
+  } else if (prune_elm.checked) {
+    if (await dfs_prune(0, 0)) {
+      displayResult('Puzzle Solved!');
       return true;
     } else {
-      console.log('Puzzle Unsolved :(');
+      displayResult('Puzzle Unsolved :(', false);
+    }
+  } else if (prune_none_elm.checked) {
+    if (await dfs(0, 0)) {
+      displayResult('Puzzle Solved!');
+      return true;
+    } else {
+      displayResult('Puzzle Unsolved :(', false);
     }
   }
 
