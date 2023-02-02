@@ -2,7 +2,7 @@
 let currSize = "";
 
 let projectList = [];
-let projectFolders = ["gold_ratio", "matrix", "path_algos", "sort", "spacefighters"];
+let projectFolders = ["gold_ratio", "matrix", "path_algos", "backtracking", "sort", "spacefighters"];
 
 let projContainer = document.querySelector(".projects-container");
 
