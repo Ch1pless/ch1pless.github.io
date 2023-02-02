@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Backtracking</title>
+  <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.3.1/p5.js"></script> -->
+  <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.3.1/addons/p5.sound.min.js"></script> -->
+  <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+  <div id="centerer">
+    <div style="display: flex; gap: 1rem; flex-direction: column; align-items: center;">
+      <div id="problem-box" class="rad-shadow">
+
+      </div>
+      <div id="result" class="rad-shadow hidden">Placeholder</div>
+    </div>
+
+    <div id="options" class="rad-shadow">
+      <button id="toggle-solve">Start</button>
+      <div>
+        <label for="pre-compute">Pre-Compute</label>
+        <input type="checkbox" name="pre-compute" id="pre-compute">
+      </div>
+      <div>
+        <label for="prune">Prune</label>
+        <input type="checkbox" name="prune" id="prune">
+      </div>
+      <div>
+        <label for="delay">Delay</label>
+        <input type="range" name="delay" id="delay" min="10" max="200" value="50">
+        <div id="delay-text"></div>
+      </div>
+      <label for="input-puzzle">Input Sudoku Template: </label>
+      <textarea name="input-puzzle" id="input-puzzle" cols="15" rows="9" style="resize:none; margin: 0 auto;"></textarea>
+      <button id="gen-puzzle">Generate Sudoku from Template</button>
+      <button id="gen-rand-puzzle" disabled>Generate Random Sudoku</button>
+    </div>
+  </div>
+
+  <script src="main.js"></script>
+</body>
+</html>
